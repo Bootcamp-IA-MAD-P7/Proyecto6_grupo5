@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
+import joblib
 
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -119,6 +120,44 @@ df = load_data()
 classes = sorted(df["Class"].unique())
 numeric_cols = [c for c in df.columns if c != "Class"]
 
+FEATURE_COLS = [
+    "Area", "Perimeter", "MajorAxisLength", "MinorAxisLength",
+    "AspectRation", "Eccentricity", "ConvexArea", "EquivDiameter",
+    "Extent", "Solidity", "roundness", "Compactness",
+    "ShapeFactor1", "ShapeFactor2", "ShapeFactor3", "ShapeFactor4",
+]
+
+FEATURE_DESCRIPTIONS = {
+    "Area": "Área de la semilla (px²)",
+    "Perimeter": "Perímetro (px)",
+    "MajorAxisLength": "Longitud del eje mayor (px)",
+    "MinorAxisLength": "Longitud del eje menor (px)",
+    "AspectRation": "Relación de aspecto (eje mayor / eje menor)",
+    "Eccentricity": "Excentricidad de la elipse",
+    "ConvexArea": "Área del casco convexo (px²)",
+    "EquivDiameter": "Diámetro equivalente al área (px)",
+    "Extent": "Proporción del bounding box",
+    "Solidity": "Solidez (área / casco convexo)",
+    "roundness": "Redondez",
+    "Compactness": "Compacidad (4π × área / perímetro²)",
+    "ShapeFactor1": "Shape Factor 1",
+    "ShapeFactor2": "Shape Factor 2",
+    "ShapeFactor3": "Shape Factor 3",
+    "ShapeFactor4": "Shape Factor 4",
+}
+
+
+@st.cache_resource
+def load_model():
+    models_path = Path(__file__).resolve().parent.parent / "models"
+    model = joblib.load(models_path / "random_forest_model.pkl")
+    scaler = joblib.load(models_path / "scaler.pkl")
+    le = joblib.load(models_path / "label_encoder.pkl")
+    return model, scaler, le
+
+
+model, scaler, le = load_model()
+
 
 # ── Hero Banner ───────────────────────────────────────────────────────────────
 st.markdown("""
@@ -175,8 +214,8 @@ with col4:
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_dist, tab_rel, tab_heat, tab_stats, tab_data = st.tabs(
-    ["📊 Distribución", "🔍 Relaciones", "🌡️ Correlación", "📈 Estadísticas", "🗃️ Datos"]
+tab_dist, tab_rel, tab_heat, tab_stats, tab_data, tab_pred = st.tabs(
+    ["📊 Distribución", "🔍 Relaciones", "🌡️ Correlación", "📈 Estadísticas", "🗃️ Datos", "🤖 Predicción"]
 )
 
 
@@ -441,3 +480,92 @@ with tab_data:
         file_name="dry_beans_filtered.csv",
         mime="text/csv",
     )
+
+
+# ── TAB 6: Prediction ─────────────────────────────────────────────────────────
+with tab_pred:
+    st.markdown("### Predicción de Tipo de Judía")
+    st.markdown(
+        "Introduce las 16 características de una semilla para obtener la predicción del modelo Random Forest."
+    )
+
+    col_form, col_result = st.columns([3, 2])
+
+    with col_form:
+        st.markdown("#### Valores de entrada")
+        input_values = {}
+        cols_row = st.columns(2)
+        for i, feat in enumerate(FEATURE_COLS):
+            with cols_row[i % 2]:
+                default_val = float(df[feat].median())
+                input_values[feat] = st.number_input(
+                    label=feat,
+                    value=default_val,
+                    format="%.6f",
+                    help=FEATURE_DESCRIPTIONS[feat],
+                    key=f"pred_{feat}",
+                )
+
+        predict_btn = st.button("🔍 Predecir tipo de judía", type="primary", use_container_width=True)
+
+    with col_result:
+        if predict_btn:
+            input_array = np.array([[input_values[f] for f in FEATURE_COLS]])
+            input_scaled = scaler.transform(input_array)
+            prediction = model.predict(input_scaled)
+            probabilities = model.predict_proba(input_scaled)
+            predicted_class = le.inverse_transform(prediction)[0]
+
+            st.markdown(
+                f"""
+                <div style="background: linear-gradient(135deg, #065f46 0%, #022c22 100%);
+                            border-radius: 16px; padding: 2rem; text-align: center;
+                            border: 1px solid #065f46;">
+                    <p style="color: #a7f3d0; font-size: 0.9rem; margin: 0;">Predicción del modelo</p>
+                    <h1 style="color: #4ade80; font-size: 2.5rem; margin: 0.3rem 0;">
+                        {predicted_class}
+                    </h1>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown("")
+            st.markdown("#### Probabilidades por clase")
+
+            prob_df = pd.DataFrame({
+                "Clase": le.classes_,
+                "Probabilidad": probabilities[0],
+            }).sort_values("Probabilidad", ascending=False)
+
+            fig_prob = px.bar(
+                prob_df,
+                x="Probabilidad",
+                y="Clase",
+                orientation="h",
+                color="Clase",
+                color_discrete_sequence=px.colors.qualitative.Set2,
+                text_auto=".1%",
+            )
+            fig_prob.update_layout(
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font_color="#e2e8f0",
+                height=350,
+                margin=dict(t=20, b=20),
+                showlegend=False,
+                yaxis=dict(categoryorder="total ascending"),
+            )
+            st.plotly_chart(fig_prob, use_container_width=True)
+
+            st.markdown("#### Top 3 clases más probables")
+            top3 = prob_df.head(3)
+            for _, row in top3.iterrows():
+                st.metric(
+                    label=row["Clase"],
+                    value=f"{row['Probabilidad']:.1%}",
+                )
+        else:
+            st.info(
+                "Completa los valores de las 16 features a la izquierda y pulsa **Predecir** para obtener el resultado."
+            )
