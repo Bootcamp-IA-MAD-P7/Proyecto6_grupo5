@@ -6,7 +6,7 @@
 
 ## Descripción del Proyecto
 
-Este proyecto tiene como objetivo clasificar variedades de semillas de judías (*Dry Bean*) a partir de características extraídas de imágenes, utilizando **modelos de ensamble** (Random Forest, Gradient Boosting, etc.) y siguiendo buenas prácticas de **MLOps** para la gestión del ciclo de vida de los modelos.
+Este proyecto tiene como objetivo clasificar variedades de semillas de judías (_Dry Bean_) a partir de características extraídas de imágenes, utilizando **modelos de ensamble** (Random Forest, y próximamente Gradient Boosting/AdaBoost) y siguiendo buenas prácticas de **MLOps** para la gestión del ciclo de vida de los modelos.
 
 El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestras de 7 clases de judías: `SEKER`, `BARBUNYA`, `BOMBAY`, `CALI`, `HOROZ`, `SIRA` y `DERMASON`. Cada muestra incluye 16 características numéricas calculadas a partir de imágenes (área, perímetro, eje mayor, eje menor, excentricidad, etc.).
 
@@ -14,45 +14,64 @@ El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestra
 
 ## Estado Actual
 
-| Fase | Estado |
-|------|--------|
-| Estructura del repositorio | Creada |
-| Dataset descargado | Disponible en `data/raw/Dry_Bean.csv` |
-| EDA (Análisis Exploratorio de Datos) | En progreso (`notebooks/01_eda.ipynb`) |
-| Preprocesamiento / Feature Engineering | Pendiente |
-| Entrenamiento de modelos | Pendiente |
-| Evaluación de modelos | Pendiente |
-| MLOps (pipeline, tracking, despliegue) | Pendiente |
-| Tests | Pendientes (`tests/` vacío) |
-| App (API / interfaz) | Pendiente (`app/` vacío) |
+| Fase                                   | Estado                                                                               |
+| -------------------------------------- | ------------------------------------------------------------------------------------ |
+| Estructura del repositorio             | ✅ Completo                                                                          |
+| Dataset descargado                     | ✅ Disponible en `data/raw/Dry_Bean.csv`                                             |
+| EDA (Análisis Exploratorio de Datos)   | ✅ Completo (`notebooks/01_eda.ipynb`)                                               |
+| Preprocesamiento / Feature Engineering | ✅ Completo (`notebooks/02_preprocesamiento_modelado.ipynb`)                         |
+| Entrenamiento de modelos               | ✅ Completo (Regresión Logística + Random Forest)                                    |
+| Evaluación de modelos                  | ✅ Completo (accuracy, precision/recall/F1, matriz de confusión, feature importance) |
+| MLOps (pipeline, tracking, despliegue) | Pendiente                                                                            |
+| Tests                                  | Pendiente (`tests/` vacío)                                                           |
+| App (dashboard EDA + predicción)       | 🔶 En progreso — dashboard EDA listo, falta página de predicción                     |
+
+---
+
+## Resultados del Modelo
+
+| Modelo                         | Accuracy Train | Accuracy Test | Overfitting |
+| ------------------------------ | -------------- | ------------- | ----------- |
+| Regresión Logística (baseline) | 92.60%         | 91.92%        | 0.68%       |
+| **Random Forest (ensemble)**   | 94.24%         | 91.47%        | **2.77%**   |
+
+✅ Overfitting controlado en ambos modelos, por debajo del 5% requerido.
+
+Artefactos guardados en `models/`:
+
+- `random_forest_model.pkl` — modelo final
+- `scaler.pkl` — escalador de features
+- `label_encoder.pkl` — codificador de las 7 clases
 
 ---
 
 ## Estructura del Repositorio
 
-```
-.
-├── app/                    # Aplicación (API, interfaz, despliegue)
+├── app/ # Aplicación Streamlit (dashboard EDA + predicción)
+│ └── main.py
 ├── data/
-│   ├── raw/                # Dataset original
-│   │   └── Dry_Bean.csv
-│   └── processed/          # Datos preprocesados (generados durante el pipeline)
-├── models/                 # Modelos entrenados serializados
+│ ├── raw/ # Dataset original
+│ │ └── Dry_Bean.csv
+│ └── processed/ # Dataset limpio y procesado
+│ └── dry_bean_clean.csv
+├── models/ # Modelos entrenados serializados
+│ ├── random_forest_model.pkl
+│ ├── scaler.pkl
+│ └── label_encoder.pkl
 ├── notebooks/
-│   └── 01_eda.ipynb        # Análisis exploratorio de datos
-├── src/                    # Código fuente del pipeline (preprocesamiento, modelos, utils)
-├── tests/                  # Tests unitarios y de integración
-├── Instructivo.md          # Guía de instalación y configuración
-└── requirements.txt        # Dependencias del proyecto
-```
+│ ├── 01_eda.ipynb # Análisis exploratorio de datos
+│ └── 02_preprocesamiento_modelado.ipynb # Preprocesamiento, modelado y evaluación
+├── src/ # Código fuente del pipeline
+├── tests/ # Tests unitarios y de integración
+├── Instructivo.md # Guía de instalación y configuración
+└── requirements.txt # Dependencias del proyecto
 
 ---
 
 ## Requisitos Previos
 
 - **Python** >= 3.12
-- **uv** — gestor de entornos y paquetes (instalación: ver `Instructivo.md`)
-- Opcionalmente: **Docker** (si se usa para despliegue)
+- Entorno virtual (`venv`) o **uv** — ver `Instructivo.md`
 
 ---
 
@@ -60,23 +79,21 @@ El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestra
 
 ```powershell
 # 1. Clonar el repositorio
-git clone <url-del-repositorio>
+git clone https://github.com/Bootcamp-IA-MAD-P7/Proyecto6_grupo5.git
 cd Proyecto6_grupo5
 
-# 2. Crear entorno virtual con uv
-uv venv
+# 2. Crear entorno virtual
+python -m venv venv
 
 # 3. Activar el entorno
+# Git Bash / Windows:
+source venv/Scripts/activate
 # PowerShell:
-.venv\Scripts\Activate.ps1
-# Bash / Linux / macOS:
-source .venv/bin/activate
+venv\Scripts\Activate.ps1
 
 # 4. Instalar dependencias
-uv pip install -r requirements.txt
+pip install -r requirements.txt
 ```
-
-> **Nota:** El `requirements.txt` actual es una lista parcial. Se recomienda actualizarlo con las dependencias completas del proyecto (matplotlib, numpy, pandas, seaborn, scikit-learn, etc.) a medida que se avanza.
 
 ---
 
@@ -85,38 +102,45 @@ uv pip install -r requirements.txt
 ### Análisis Exploratorio (EDA)
 
 ```bash
-# Abrir con Jupyter
 jupyter notebook notebooks/01_eda.ipynb
-
-# O desde VS Code, abrir el notebook directamente
 ```
 
-### Pipeline de Entrenamiento
+### Preprocesamiento y Modelado
 
-> Pendiente — se implementará en `src/` con scripts para preprocesamiento, entrenamiento y evaluación.
+```bash
+jupyter notebook notebooks/02_preprocesamiento_modelado.ipynb
+```
+
+Este notebook genera los artefactos en `models/` (modelo, scaler, label encoder) necesarios para la app.
+
+### App (Streamlit)
+
+```bash
+streamlit run app/main.py
+```
 
 ---
 
 ## Clases del Dataset
 
-| Clase | Descripción |
-|-------|-------------|
-| `SEKER` | Judía redonda pequeña |
-| `BARBUNYA` | Judía de forma irregular |
-| `BOMBAY` | Judía grande y alargada |
-| `CALI` | Judía grande y ancha |
-| `HOROZ` | Judía alargada y delgada |
-| `SIRA` | Judía intermedia |
+| Clase      | Descripción                   |
+| ---------- | ----------------------------- |
+| `SEKER`    | Judía redonda pequeña         |
+| `BARBUNYA` | Judía de forma irregular      |
+| `BOMBAY`   | Judía grande y alargada       |
+| `CALI`     | Judía grande y ancha          |
+| `HOROZ`    | Judía alargada y delgada      |
+| `SIRA`     | Judía intermedia              |
 | `DERMASON` | Judía con forma de media luna |
 
 ---
 
 ## Notas para el Desarrollo
 
-- El notebook `01_eda.ipynb` incluye ya: distribución de clases, boxplots de área por clase, matriz de correlación y dispersión área vs. excentricidad.
+- El notebook `01_eda.ipynb` incluye: distribución de clases, boxplots de área por clase, matriz de correlación y dispersión área vs. excentricidad.
+- El notebook `02_preprocesamiento_modelado.ipynb` incluye: encoding, escalado, split estratificado, modelo baseline, modelo ensemble, validación cruzada estratificada, métricas completas y guardado de artefactos.
 - La columna `Class` del dataset tiene valores con espacios en blanco al final; se limpia con `.str.strip()` en el EDA.
-- Las imágenes generadas por los gráficos se embeben en el notebook (formato base64). Al ejecutar localmente, las gráficas se muestrarán directamente.
-- Se recomienda seguir la convención de nombrar los notebooks secuencialmente: `01_eda.ipynb`, `02_preprocesamiento.ipynb`, `03_modelos.ipynb`, etc.
+- Se usa `Develop` (con mayúscula) como rama de integración del equipo.
 
 ---
 
