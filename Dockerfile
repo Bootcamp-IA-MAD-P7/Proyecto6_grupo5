@@ -12,7 +12,8 @@ COPY src/ ./src/
 COPY .streamlit/ ./.streamlit/
 
 EXPOSE 8501
+EXPOSE 8000
 
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:8000/health || exit 1
 
-ENTRYPOINT ["streamlit", "run", "app/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["sh", "-c", "streamlit run app/main.py --server.port=8501 --server.address=0.0.0.0 & uvicorn app.api:app --host 0.0.0.0 --port 8000 && wait"]
