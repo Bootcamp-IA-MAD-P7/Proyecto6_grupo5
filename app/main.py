@@ -150,7 +150,7 @@ FEATURE_DESCRIPTIONS = {
 @st.cache_resource
 def load_model():
     models_path = Path(__file__).resolve().parent.parent / "models"
-    model = joblib.load(models_path / "random_forest_model.pkl")
+    model = joblib.load(models_path / "best_model.pkl")
     scaler = joblib.load(models_path / "scaler.pkl")
     le = joblib.load(models_path / "label_encoder.pkl")
     return model, scaler, le
