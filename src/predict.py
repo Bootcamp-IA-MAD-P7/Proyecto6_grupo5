@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
@@ -56,3 +57,18 @@ def predict_batch(df: pd.DataFrame, model, scaler, le) -> pd.DataFrame:
         result[f"prob_{cls}"] = probas[:, i]
 
     return result
+
+
+def log_prediction(input_dict: dict, predicted_class: str, probability: float):
+    log_path = ROOT / "data" / "predictions_log.csv"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    row = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        **{k: input_dict[k] for k in FEATURE_COLS},
+        "predicted_class": predicted_class,
+        "probability": round(probability, 6),
+    }
+
+    write_header = not log_path.exists() or log_path.stat().st_size == 0
+    pd.DataFrame([row]).to_csv(log_path, mode="a", index=False, header=write_header)

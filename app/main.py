@@ -7,6 +7,8 @@ from plotly.subplots import make_subplots
 from pathlib import Path
 import joblib
 
+from src.predict import log_prediction
+
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Dry Bean Explorer",
@@ -214,8 +216,8 @@ with col4:
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_dist, tab_rel, tab_heat, tab_stats, tab_data, tab_pred = st.tabs(
-    ["📊 Distribución", "🔍 Relaciones", "🌡️ Correlación", "📈 Estadísticas", "🗃️ Datos", "🤖 Predicción"]
+tab_dist, tab_rel, tab_heat, tab_stats, tab_data, tab_pred, tab_monitor = st.tabs(
+    ["📊 Distribución", "🔍 Relaciones", "🌡️ Correlación", "📈 Estadísticas", "🗃️ Datos", "🤖 Predicción", "📋 Monitorización"]
 )
 
 
@@ -515,6 +517,7 @@ with tab_pred:
             prediction = model.predict(input_scaled)
             probabilities = model.predict_proba(input_scaled)
             predicted_class = le.inverse_transform(prediction)[0]
+            log_prediction(input_values, predicted_class, float(probabilities[0].max()))
 
             st.markdown(
                 f"""
@@ -569,3 +572,47 @@ with tab_pred:
             st.info(
                 "Completa los valores de las 16 features a la izquierda y pulsa **Predecir** para obtener el resultado."
             )
+
+
+# ── TAB 7: Monitoring ──────────────────────────────────────────────────────────
+with tab_monitor:
+    st.markdown("### Monitorización de Predicciones")
+
+    log_path = Path(__file__).resolve().parent.parent / "data" / "predictions_log.csv"
+
+    if not log_path.exists():
+        st.info("Aún no hay predicciones registradas. Haz una predicción en la pestaña **Predicción** para empezar a generar datos.")
+    else:
+        log_df = pd.read_csv(log_path)
+
+        col_total, col_classes = st.columns(2)
+        with col_total:
+            st.metric("Total de predicciones", f"{len(log_df):,}")
+        with col_classes:
+            st.metric("Clases distintas predichas", log_df["predicted_class"].nunique())
+
+        st.markdown("#### Predicciones por clase")
+        class_counts = log_df["predicted_class"].value_counts().reset_index()
+        class_counts.columns = ["Clase", "Predicciones"]
+
+        fig_monitor = px.bar(
+            class_counts,
+            x="Clase",
+            y="Predicciones",
+            color="Clase",
+            color_discrete_sequence=px.colors.qualitative.Set2,
+            text="Predicciones",
+        )
+        fig_monitor.update_traces(textposition="outside", textfont_size=13, marker_line_width=0)
+        fig_monitor.update_layout(
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font_color="#e2e8f0",
+            showlegend=False,
+            height=420,
+            margin=dict(t=40, b=40),
+        )
+        st.plotly_chart(fig_monitor, use_container_width=True)
+
+        with st.expander("Ver log completo"):
+            st.dataframe(log_df, use_container_width=True, height=300)
