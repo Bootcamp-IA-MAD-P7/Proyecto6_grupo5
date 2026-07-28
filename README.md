@@ -6,7 +6,7 @@
 
 ## Descripción del Proyecto
 
-Este proyecto clasifica variedades de semillas de judías (*Dry Bean*) a partir de características extraídas de imágenes, utilizando **modelos de ensamble** y siguiendo buenas prácticas de **MLOps** (tracking con MLflow, despliegue con Docker, tests automatizados).
+Este proyecto clasifica variedades de semillas de judías (*Dry Bean*) a partir de características extraídas de imágenes, utilizando **modelos de ensamble** y siguiendo buenas prácticas de **MLOps** (tracking con MLflow, backend REST API con FastAPI, despliegue con Docker, tests automatizados).
 
 El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestras de 7 clases de judías: `SEKER`, `BARBUNYA`, `BOMBAY`, `CALI`, `HOROZ`, `SIRA` y `DERMASON`. Tras la limpieza (eliminación de duplicados), el dataset de trabajo tiene **13,543 muestras** con 16 características numéricas.
 
@@ -27,6 +27,7 @@ El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestra
 | Tests unitarios | Implementados — 15 tests, todos pasando |
 | MLflow tracking | Implementado — `src/run_pipeline.py` |
 | Despliegue Docker | Implementado — `Dockerfile` + `docker-compose.yml` |
+| Backend API (FastAPI) | Implementado — `app/api.py` (6 endpoints REST) |
 
 ---
 
@@ -54,7 +55,8 @@ Búsqueda aleatoria (`RandomizedSearchCV`, 50 iteraciones, 5-fold CV) sobre Rand
 ```
 .
 ├── app/
-│   └── main.py                          # App Streamlit (EDA Explorer + Predicción)
+│   ├── main.py                          # App Streamlit (EDA Explorer + Predicción)
+│   └── api.py                           # Backend REST API (FastAPI)
 ├── data/
 │   ├── raw/
 │   │   ├── Dry_Bean.csv
@@ -141,12 +143,42 @@ Se abre en `http://localhost:8501`. Incluye 6 pestañas:
 ### Docker
 
 ```bash
-# Construir y ejecutar
+# Construir y ejecutar (Streamlit + API)
 docker compose up --build
 
 # O solo el build
 docker build -t bean-classifier .
-docker run -p 8501:8501 bean-classifier
+docker run -p 8501:8501 -p 8000:8000 bean-classifier
+```
+
+### Backend API (FastAPI)
+
+```bash
+# Ejecutar solo la API
+uvicorn app.api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Se abre en `http://localhost:8000`. Documentación interactiva en `http://localhost:8000/docs`.
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/health` | Health check del servicio |
+| `GET` | `/model/info` | Info del modelo (tipo, clases, features) |
+| `POST` | `/predict` | Predicción individual (16 features → clase + probabilidades) |
+| `POST` | `/predict/batch` | Predicción en lote (hasta 100 muestras) |
+| `GET` | `/dataset/stats` | Estadísticas del dataset |
+| `GET` | `/dataset/sample` | Muestra de datos (?n=5) |
+
+Ejemplo de petición `POST /predict`:
+```json
+{
+  "Area": 30000, "Perimeter": 620, "MajorAxisLength": 200,
+  "MinorAxisLength": 180, "AspectRation": 1.1, "Eccentricity": 0.45,
+  "ConvexArea": 30500, "EquivDiameter": 195, "Extent": 0.78,
+  "Solidity": 0.99, "roundness": 0.94, "Compactness": 0.92,
+  "ShapeFactor1": 0.007, "ShapeFactor2": 0.003, "ShapeFactor3": 0.85,
+  "ShapeFactor4": 0.998
+}
 ```
 
 ### Pipeline con MLflow
@@ -167,7 +199,7 @@ mlflow ui
 python -m pytest tests/ -v
 ```
 
-15 tests cubriendo: existencia de dataset, columnas esperadas, valores nulos, clases, artefactos del modelo, forma del scaler, predicciones, confianza y límite de memoria.
+32 tests (15 modelo + 17 API) cubriendo: existencia de dataset, columnas, valores nulos, clases, artefactos del modelo, predicciones, endpoints de la API, validación de entrada y límites.
 
 ### Notebooks
 
@@ -188,6 +220,7 @@ jupyter notebook notebooks/04_optimizacion_hiperparametros.ipynb
 | `train.py` | `get_models()`, `train_all_models()`, `results_to_dataframe()`, `save_model()` |
 | `predict.py` | `load_artifacts()`, `predict_single()`, `predict_batch()` |
 | `run_pipeline.py` | Pipeline completo con logging a MLflow |
+| `api.py` | Backend REST API con FastAPI (6 endpoints) |
 
 ---
 
@@ -220,6 +253,8 @@ jupyter notebook notebooks/04_optimizacion_hiperparametros.ipynb
 | xgboost | >= 2.0.0 | Modelo ensemble XGBoost |
 | lightgbm | >= 4.0.0 | Modelo ensemble LightGBM |
 | mlflow | >= 2.10.0 | Tracking de experimentos |
+| fastapi | >= 0.110.0 | Backend REST API |
+| pydantic | >= 2.5.0 | Validación de request/response |
 | pytest | >= 8.0.0 | Tests unitarios |
 
 ---
