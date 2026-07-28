@@ -27,7 +27,7 @@
 
 ## Estructura del proyecto
 
-- app/ → Aplicación (Streamlit/Gradio) que sirve el modelo
+- app/ → Aplicación (Streamlit) y Backend REST API (FastAPI) que sirve el modelo
 - data/raw/ → Dataset original sin procesar
 - data/processed/ → Dataset limpio, listo para modelar
 - models/ → Modelos entrenados guardados (.pkl / .joblib)
