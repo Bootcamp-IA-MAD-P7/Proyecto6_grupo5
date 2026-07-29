@@ -133,7 +133,7 @@ class DatasetStats(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     models_dir = ROOT / "models"
-    app.state.model = joblib.load(models_dir / "random_forest_model.pkl")
+    app.state.model = joblib.load(models_dir / "best_model.pkl")
     app.state.scaler = joblib.load(models_dir / "scaler.pkl")
     app.state.le = joblib.load(models_dir / "label_encoder.pkl")
     yield

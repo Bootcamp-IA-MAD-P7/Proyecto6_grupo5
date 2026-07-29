@@ -21,7 +21,7 @@ MODELS_DIR = ROOT / "models"
 
 @pytest.fixture(scope="module")
 def model():
-    return joblib.load(MODELS_DIR / "random_forest_model.pkl")
+    return joblib.load(MODELS_DIR / "best_model.pkl")
 
 
 @pytest.fixture(scope="module")
@@ -73,7 +73,7 @@ def test_dataset_no_trailing_spaces(sample_data):
 # ── Model artifact tests ─────────────────────────────────────────────────────
 
 def test_model_file_exists():
-    assert (MODELS_DIR / "random_forest_model.pkl").exists()
+    assert (MODELS_DIR / "best_model.pkl").exists()
 
 
 def test_scaler_file_exists():
@@ -140,7 +140,7 @@ def test_model_loads_within_memory_limit():
     import tracemalloc
 
     tracemalloc.start()
-    _ = joblib.load(MODELS_DIR / "random_forest_model.pkl")
+    _ = joblib.load(MODELS_DIR / "best_model.pkl")
     _, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     assert peak < 500 * 1024 * 1024, f"Model uses {peak / 1024 / 1024:.1f} MB (>500 MB limit)"
