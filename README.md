@@ -65,7 +65,6 @@ Búsqueda aleatoria (`RandomizedSearchCV`, 50 iteraciones, 5-fold CV) sobre Rand
 │       └── dry_bean_clean.csv
 ├── models/
 │   ├── best_model.pkl                   # Mejor modelo serializado
-│   ├── random_forest_model.pkl          # Random Forest base
 │   ├── scaler.pkl                       # StandardScaler
 │   ├── label_encoder.pkl                # LabelEncoder
 │   ├── comparison_chart.png             # Gráfico comparativo
