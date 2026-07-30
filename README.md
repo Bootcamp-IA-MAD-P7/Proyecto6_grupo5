@@ -6,7 +6,7 @@
 
 ## Descripción del Proyecto
 
-Este proyecto clasifica variedades de semillas de judías (*Dry Bean*) a partir de características extraídas de imágenes, utilizando **modelos de ensamble** y siguiendo buenas prácticas de **MLOps** (tracking con MLflow, backend REST API con FastAPI, despliegue con Docker, tests automatizados).
+Este proyecto clasifica variedades de semillas de judías (_Dry Bean_) a partir de características extraídas de imágenes, utilizando **modelos de ensamble** y siguiendo buenas prácticas de **MLOps** (tracking con MLflow, backend REST API con FastAPI, despliegue con Docker, tests automatizados).
 
 El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestras de 7 clases de judías: `SEKER`, `BARBUNYA`, `BOMBAY`, `CALI`, `HOROZ`, `SIRA` y `DERMASON`. Tras la limpieza (eliminación de duplicados), el dataset de trabajo tiene **13,543 muestras** con 16 características numéricas.
 
@@ -14,20 +14,20 @@ El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestra
 
 ## Estado Actual
 
-| Fase | Estado |
-|------|--------|
-| Estructura del repositorio | Creada |
-| Dataset descargado y limpiado | `data/raw/` + `data/processed/` |
-| EDA (Análisis Exploratorio) | Completado — `notebooks/01_eda.ipynb` |
-| Preprocesamiento + Modelado base | Completado — `notebooks/02_preprocesamiento_modelado.ipynb` |
-| Modelos ensemble avanzados | Completado — `notebooks/03_modelos_ensemble.ipynb` |
-| Optimización de hiperparámetros | Completado — `notebooks/04_optimizacion_hiperparametros.ipynb` |
-| Pipeline modular (src/) | Implementado — `src/preprocessing.py`, `src/train.py`, `src/predict.py` |
-| App Streamlit (EDA + Predicción) | Implementada — `app/main.py` (6 pestañas) |
-| Tests unitarios | Implementados — 15 tests, todos pasando |
-| MLflow tracking | Implementado — `src/run_pipeline.py` |
-| Despliegue Docker | Implementado — `Dockerfile` + `docker-compose.yml` |
-| Backend API (FastAPI) | Implementado — `app/api.py` (6 endpoints REST) |
+| Fase                             | Estado                                                                  |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| Estructura del repositorio       | Creada                                                                  |
+| Dataset descargado y limpiado    | `data/raw/` + `data/processed/`                                         |
+| EDA (Análisis Exploratorio)      | Completado — `notebooks/01_eda.ipynb`                                   |
+| Preprocesamiento + Modelado base | Completado — `notebooks/02_preprocesamiento_modelado.ipynb`             |
+| Modelos ensemble avanzados       | Completado — `notebooks/03_modelos_ensemble.ipynb`                      |
+| Optimización de hiperparámetros  | Completado — `notebooks/04_optimizacion_hiperparametros.ipynb`          |
+| Pipeline modular (src/)          | Implementado — `src/preprocessing.py`, `src/train.py`, `src/predict.py` |
+| App Streamlit (EDA + Predicción) | Implementada — `app/main.py` (6 pestañas)                               |
+| Tests unitarios                  | Implementados — 15 tests, todos pasando                                 |
+| MLflow tracking                  | Implementado — `src/run_pipeline.py`                                    |
+| Despliegue Docker                | Implementado — `Dockerfile` + `docker-compose.yml`                      |
+| Backend API (FastAPI)            | Implementado — `app/api.py` (6 endpoints REST)                          |
 
 ---
 
@@ -35,10 +35,10 @@ El dataset utilizado es el **UCI Dry Bean Dataset**, que contiene 13,611 muestra
 
 ### Modelos base (notebook 02)
 
-| Modelo | Accuracy Train | Accuracy Test | Diferencia |
-|--------|---------------|---------------|------------|
-| Regresión Logística | 92.6% | 91.9% | 0.68% |
-| Random Forest | 94.2% | 91.5% | 2.77% |
+| Modelo              | Accuracy Train | Accuracy Test | Diferencia |
+| ------------------- | -------------- | ------------- | ---------- |
+| Regresión Logística | 92.6%          | 91.9%         | 0.68%      |
+| Random Forest       | 94.2%          | 91.5%         | 2.77%      |
 
 ### Modelos ensemble avanzados (notebook 03)
 
@@ -132,6 +132,7 @@ streamlit run app/main.py
 ```
 
 Se abre en `http://localhost:8501`. Incluye 6 pestañas:
+
 - **Distribución**: barras de clases, histogramas y boxplots
 - **Relaciones**: scatter plots y violin plots
 - **Correlación**: heatmap con Pearson/Spearman/Kendall
@@ -159,23 +160,34 @@ uvicorn app.api:app --host 0.0.0.0 --port 8000 --reload
 
 Se abre en `http://localhost:8000`. Documentación interactiva en `http://localhost:8000/docs`.
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/health` | Health check del servicio |
-| `GET` | `/model/info` | Info del modelo (tipo, clases, features) |
-| `POST` | `/predict` | Predicción individual (16 features → clase + probabilidades) |
-| `POST` | `/predict/batch` | Predicción en lote (hasta 100 muestras) |
-| `GET` | `/dataset/stats` | Estadísticas del dataset |
-| `GET` | `/dataset/sample` | Muestra de datos (?n=5) |
+| Método | Ruta              | Descripción                                                  |
+| ------ | ----------------- | ------------------------------------------------------------ |
+| `GET`  | `/health`         | Health check del servicio                                    |
+| `GET`  | `/model/info`     | Info del modelo (tipo, clases, features)                     |
+| `POST` | `/predict`        | Predicción individual (16 features → clase + probabilidades) |
+| `POST` | `/predict/batch`  | Predicción en lote (hasta 100 muestras)                      |
+| `GET`  | `/dataset/stats`  | Estadísticas del dataset                                     |
+| `GET`  | `/dataset/sample` | Muestra de datos (?n=5)                                      |
 
 Ejemplo de petición `POST /predict`:
+
 ```json
 {
-  "Area": 30000, "Perimeter": 620, "MajorAxisLength": 200,
-  "MinorAxisLength": 180, "AspectRation": 1.1, "Eccentricity": 0.45,
-  "ConvexArea": 30500, "EquivDiameter": 195, "Extent": 0.78,
-  "Solidity": 0.99, "roundness": 0.94, "Compactness": 0.92,
-  "ShapeFactor1": 0.007, "ShapeFactor2": 0.003, "ShapeFactor3": 0.85,
+  "Area": 30000,
+  "Perimeter": 620,
+  "MajorAxisLength": 200,
+  "MinorAxisLength": 180,
+  "AspectRation": 1.1,
+  "Eccentricity": 0.45,
+  "ConvexArea": 30500,
+  "EquivDiameter": 195,
+  "Extent": 0.78,
+  "Solidity": 0.99,
+  "roundness": 0.94,
+  "Compactness": 0.92,
+  "ShapeFactor1": 0.007,
+  "ShapeFactor2": 0.003,
+  "ShapeFactor3": 0.85,
   "ShapeFactor4": 0.998
 }
 ```
@@ -213,57 +225,57 @@ jupyter notebook notebooks/04_optimizacion_hiperparametros.ipynb
 
 ## Módulos de src/
 
-| Módulo | Función principal |
-|--------|-------------------|
+| Módulo             | Función principal                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------- |
 | `preprocessing.py` | `load_raw_data()`, `clean_data()`, `get_feature_target_split()`, `scale_features()` |
-| `train.py` | `get_models()`, `train_all_models()`, `results_to_dataframe()`, `save_model()` |
-| `predict.py` | `load_artifacts()`, `predict_single()`, `predict_batch()` |
-| `run_pipeline.py` | Pipeline completo con logging a MLflow |
-| `api.py` | Backend REST API con FastAPI (6 endpoints) |
+| `train.py`         | `get_models()`, `train_all_models()`, `results_to_dataframe()`, `save_model()`      |
+| `predict.py`       | `load_artifacts()`, `predict_single()`, `predict_batch()`                           |
+| `run_pipeline.py`  | Pipeline completo con logging a MLflow                                              |
+| `api.py`           | Backend REST API con FastAPI (6 endpoints)                                          |
 
 ---
 
 ## Clases del Dataset
 
-| Clase | Muestras | Descripción |
-|-------|----------|-------------|
-| `DERMASON` | 3,546 | Judía con forma de media luna |
-| `SIRA` | 2,636 | Judía intermedia |
-| `SEKER` | 2,027 | Judía redonda pequeña |
-| `HOROZ` | 1,860 | Judía alargada y delgada |
-| `CALI` | 1,630 | Judía grande y ancha |
-| `BARBUNYA` | 1,322 | Judía de forma irregular |
-| `BOMBAY` | 522 | Judía grande y alargada |
+| Clase      | Muestras | Descripción                   |
+| ---------- | -------- | ----------------------------- |
+| `DERMASON` | 3,546    | Judía con forma de media luna |
+| `SIRA`     | 2,636    | Judía intermedia              |
+| `SEKER`    | 2,027    | Judía redonda pequeña         |
+| `HOROZ`    | 1,860    | Judía alargada y delgada      |
+| `CALI`     | 1,630    | Judía grande y ancha          |
+| `BARBUNYA` | 1,322    | Judía de forma irregular      |
+| `BOMBAY`   | 522      | Judía grande y alargada       |
 
 ---
 
 ## Dependencias
 
-| Paquete | Versión mínima | Uso |
-|---------|----------------|-----|
-| streamlit | >= 1.35.0 | App web interactiva |
-| pandas | >= 2.2.0 | Manipulación de datos |
-| numpy | >= 1.26.0 | Computación numérica |
-| plotly | >= 5.22.0 | Gráficos interactivos |
-| matplotlib | >= 3.9.0 | Gráficos estáticos |
-| seaborn | >= 0.13.0 | Visualización estadística |
-| scikit-learn | >= 1.4.0 | Modelos y preprocesamiento |
-| joblib | >= 1.3.0 | Serialización de modelos |
-| xgboost | >= 2.0.0 | Modelo ensemble XGBoost |
-| lightgbm | >= 4.0.0 | Modelo ensemble LightGBM |
-| mlflow | >= 2.10.0 | Tracking de experimentos |
-| fastapi | >= 0.110.0 | Backend REST API |
-| pydantic | >= 2.5.0 | Validación de request/response |
-| pytest | >= 8.0.0 | Tests unitarios |
+| Paquete      | Versión mínima | Uso                            |
+| ------------ | -------------- | ------------------------------ |
+| streamlit    | >= 1.35.0      | App web interactiva            |
+| pandas       | >= 2.2.0       | Manipulación de datos          |
+| numpy        | >= 1.26.0      | Computación numérica           |
+| plotly       | >= 5.22.0      | Gráficos interactivos          |
+| matplotlib   | >= 3.9.0       | Gráficos estáticos             |
+| seaborn      | >= 0.13.0      | Visualización estadística      |
+| scikit-learn | >= 1.4.0       | Modelos y preprocesamiento     |
+| joblib       | >= 1.3.0       | Serialización de modelos       |
+| xgboost      | >= 2.0.0       | Modelo ensemble XGBoost        |
+| lightgbm     | >= 4.0.0       | Modelo ensemble LightGBM       |
+| mlflow       | >= 2.10.0      | Tracking de experimentos       |
+| fastapi      | >= 0.110.0     | Backend REST API               |
+| pydantic     | >= 2.5.0       | Validación de request/response |
+| pytest       | >= 8.0.0       | Tests unitarios                |
 
 ---
 
 ## Flujo de trabajo con Git
 
-1. Nunca trabajar directo en `main` ni en `develop`.
+1. Nunca trabajar directo en `main` ni en `Develop`.
 2. Crear tu rama: `git checkout -b feature/nombre-de-tu-tarea`
-3. Antes de empezar: `git checkout develop && git pull && git checkout feature/tu-rama && git merge develop`
-4. Al terminar: commit + push, y abrir PR hacia `develop`.
+3. Antes de empezar: `git checkout Develop && git pull && git checkout feature/tu-rama && git merge Develop`
+4. Al terminar: commit + push, y abrir PR hacia `Develop`.
 
 ---
 
