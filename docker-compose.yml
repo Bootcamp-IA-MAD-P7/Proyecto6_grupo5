@@ -1,0 +1,12 @@
+services:
+  bean-classifier:
+    build: .
+    ports:
+      - "8501:8501"
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+    restart: unless-stopped
