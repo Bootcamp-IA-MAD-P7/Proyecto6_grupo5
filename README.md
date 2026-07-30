@@ -48,7 +48,9 @@ Se comparan Gradient Boosting, XGBoost y LightGBM frente a los modelos base. Eje
 
 Búsqueda aleatoria (`RandomizedSearchCV`, 50 iteraciones, 5-fold CV) sobre Random Forest y Gradient Boosting.
 
----
+### Evaluación e Interpretabilidad (notebook 05)
+
+## Métricas por clase (precision, recall, F1-score), matriz de confusión y análisis de importancia de features (feature importance) del modelo final. Incluye análisis de errores de clasificación entre clases geométricamente similares (ej. SIRA y DERMASON).
 
 ## Estructura del Repositorio
 
@@ -74,7 +76,8 @@ Búsqueda aleatoria (`RandomizedSearchCV`, 50 iteraciones, 5-fold CV) sobre Rand
 │   ├── 01_eda.ipynb                     # Análisis exploratorio
 │   ├── 02_preprocesamiento_modelado.ipynb  # Modelado base
 │   ├── 03_modelos_ensemble.ipynb        # Ensemble avanzados
-│   └── 04_optimizacion_hiperparametros.ipynb  # Hiperparámetros
+│   ├── 04_optimizacion_hiperparametros.ipynb  # Hiperparámetros
+│   └── 05_evaluacion_interpretabilidad.ipynb  # Métricas, matriz confusión, feature importance
 ├── src/
 │   ├── __init__.py
 │   ├── preprocessing.py                 # Carga, limpieza, split de datos
@@ -219,6 +222,7 @@ jupyter notebook notebooks/01_eda.ipynb
 jupyter notebook notebooks/02_preprocesamiento_modelado.ipynb
 jupyter notebook notebooks/03_modelos_ensemble.ipynb
 jupyter notebook notebooks/04_optimizacion_hiperparametros.ipynb
+jupyter notebook notebooks/05_evaluacion_interpretabilidad.ipynb
 ```
 
 ---
