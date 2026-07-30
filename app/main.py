@@ -5,8 +5,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
+import sys
 import joblib
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.predict import log_prediction
 
 # ── Page Config ───────────────────────────────────────────────────────────────
